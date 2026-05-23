@@ -1,77 +1,105 @@
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginPage from './pages/LoginPage';
+import Layout from './components/Layout';
+import './App.css';
+
+function HomePage() {
+  return (
+    <div className="max-w-2xl">
+      <h1 className="text-3xl font-bold text-brand-purple mb-4">Welcome to Savomart</h1>
+      <p className="text-muted">Your loyalty rewards companion app.</p>
+    </div>
+  );
+}
+
+function OffersPage() {
+  return (
+    <div className="max-w-2xl">
+      <h1 className="text-3xl font-bold text-brand-purple mb-4">Special Offers</h1>
+      <p className="text-muted">Check out our exclusive deals.</p>
+    </div>
+  );
+}
+
+function StoresPage() {
+  return (
+    <div className="max-w-2xl">
+      <h1 className="text-3xl font-bold text-brand-purple mb-4">Find Stores</h1>
+      <p className="text-muted">Locate Savomart stores near you.</p>
+    </div>
+  );
+}
+
+function SupportPage() {
+  return (
+    <div className="max-w-2xl">
+      <h1 className="text-3xl font-bold text-brand-purple mb-4">Support</h1>
+      <p className="text-muted">Need help? Contact our support team.</p>
+    </div>
+  );
+}
+
+function ProtectedRoute({ children }) {
+  const { token, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-muted">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Layout>{children}</Layout>;
+}
 
 function App() {
   return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-mark">S</div>
-        <nav aria-label="Primary navigation">
-          <a href="#overview" className="active">Overview</a>
-          <a href="#members">Members</a>
-          <a href="#rewards">Rewards</a>
-          <a href="#assistant">AI Assistant</a>
-        </nav>
-      </aside>
-
-      <section className="workspace" id="overview">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Savomart</p>
-            <h1>Loyalty Companion</h1>
-          </div>
-          <span className="api-status">API: /api/health</span>
-        </header>
-
-        <section className="metrics" aria-label="Loyalty metrics">
-          <article>
-            <span>Members</span>
-            <strong>12,480</strong>
-            <small>Ready for customer sync</small>
-          </article>
-          <article>
-            <span>Reward Claims</span>
-            <strong>2,931</strong>
-            <small>Pending router integration</small>
-          </article>
-          <article>
-            <span>OTP Mode</span>
-            <strong>Dev</strong>
-            <small>Controlled by backend env</small>
-          </article>
-        </section>
-
-        <section className="content-grid">
-          <article className="panel">
-            <div className="panel-header">
-              <h2>Backend Modules</h2>
-              <span>FastAPI</span>
-            </div>
-            <ul className="module-list">
-              <li>routers</li>
-              <li>services</li>
-              <li>schemas</li>
-              <li>models</li>
-            </ul>
-          </article>
-
-          <article className="panel">
-            <div className="panel-header">
-              <h2>Deployment Targets</h2>
-              <span>Cloud</span>
-            </div>
-            <div className="deployment-row">
-              <span>Render</span>
-              <strong>API + PostgreSQL</strong>
-            </div>
-            <div className="deployment-row">
-              <span>Vercel</span>
-              <strong>React frontend</strong>
-            </div>
-          </article>
-        </section>
-      </section>
-    </main>
-  )
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/offers"
+            element={
+              <ProtectedRoute>
+                <OffersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stores"
+            element={
+              <ProtectedRoute>
+                <StoresPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <ProtectedRoute>
+                <SupportPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  );
 }
 
-export default App
+export default App;

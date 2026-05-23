@@ -1,17 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
 import Layout from './components/Layout';
 import './App.css';
-
-function HomePage() {
-  return (
-    <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold text-brand-purple mb-4">Welcome to Savomart</h1>
-      <p className="text-muted">Your loyalty rewards companion app.</p>
-    </div>
-  );
-}
 
 function OffersPage() {
   return (
@@ -68,7 +60,7 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <HomePage />
+                <DashboardPage />
               </ProtectedRoute>
             }
           />

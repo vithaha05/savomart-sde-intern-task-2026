@@ -2,35 +2,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import OffersPage from './pages/OffersPage';
+import StoresPage from './pages/StoresPage';
+import SupportPage from './pages/SupportPage';
 import Layout from './components/Layout';
 import './App.css';
-
-function OffersPage() {
-  return (
-    <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold text-brand-purple mb-4">Special Offers</h1>
-      <p className="text-muted">Check out our exclusive deals.</p>
-    </div>
-  );
-}
-
-function StoresPage() {
-  return (
-    <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold text-brand-purple mb-4">Find Stores</h1>
-      <p className="text-muted">Locate Savomart stores near you.</p>
-    </div>
-  );
-}
-
-function SupportPage() {
-  return (
-    <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold text-brand-purple mb-4">Support</h1>
-      <p className="text-muted">Need help? Contact our support team.</p>
-    </div>
-  );
-}
 
 function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();

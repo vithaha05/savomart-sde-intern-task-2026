@@ -12,12 +12,9 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
+COPY . .
 
-# Render provides $PORT at runtime. Default to 8000 if not set.
 ENV PORT=8000
-
 EXPOSE 8000
 
-# Run alembic migrations before starting the server, then start uvicorn on $PORT
 CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

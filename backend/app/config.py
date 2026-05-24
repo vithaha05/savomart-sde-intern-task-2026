@@ -28,10 +28,11 @@ class Settings(BaseSettings):
         default="Monday to Saturday, 9:00 AM - 8:00 PM IST",
         alias="SUPPORT_OPERATING_HOURS",
     )
+    frontend_url: str | None = Field(default=None, alias="FRONTEND_URL")
+
     cors_origins: list[str] = Field(
         default=[
             "http://localhost:5173",
-            "https://savomart-sde-intern-task-2026.vercel.app",
         ],
         alias="CORS_ORIGINS",
     )
@@ -55,4 +56,12 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    # If FRONTEND_URL is provided, ensure it's included in CORS origins
+    if settings.frontend_url:
+        try:
+            if settings.frontend_url not in settings.cors_origins:
+                settings.cors_origins.append(settings.frontend_url)
+        except Exception:
+            pass
+    return settings

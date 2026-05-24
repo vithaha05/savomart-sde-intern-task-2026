@@ -7,32 +7,28 @@ import CouponCard from '../components/dashboard/CouponCard';
 import EmptyState from '../components/dashboard/EmptyState';
 
 function fetchProfile() {
-  return axiosInstance.get('/profile').then((res) => res.data);
+  return axiosInstance.get('/profile').then(r => r.data);
 }
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['profile'],
     queryFn: fetchProfile,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-ink mb-2">Oops!</h2>
-          <p className="text-muted mb-4">Failed to load your dashboard.</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-brand-purple text-white font-semibold rounded-full hover:bg-brand-purple/90 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
+  if (error) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1f2937', marginBottom: '8px' }}>Something went wrong</h2>
+        <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '16px' }}>Failed to load your dashboard.</p>
+        <button onClick={() => window.location.reload()}
+          style={{ padding: '10px 24px', background: '#782B90', color: 'white', border: 'none', borderRadius: '20px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+          Retry
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
   const user = data?.user || {};
   const profile = data?.profile || {};
@@ -47,70 +43,43 @@ export default function DashboardPage() {
   const pointsToNext = profile.points_to_next_tier || 0;
 
   return (
-    <div className="min-h-screen bg-page-bg">
-      <div className="max-w-2xl mx-auto px-4 py-4 md:py-6">
-        {/* Hero Card */}
-        <HeroCard
-          user={user}
-          pointsBalance={pointsBalance}
-          tier={tier}
-          isLoading={isLoading}
-        />
+    <div style={{ paddingBottom: '8px' }}>
+      <HeroCard user={user} pointsBalance={pointsBalance} tier={tier} isLoading={isLoading} />
+      <TierProgress currentTier={tier} nextTier={nextTier} tierProgress={tierProgress} pointsToNext={pointsToNext} isLoading={isLoading} />
+      <StatsRow totalEarned={totalEarned} totalRedeemed={totalRedeemed} activeCoupons={coupons.length} isLoading={isLoading} />
 
-        {/* Tier Progress */}
-        <TierProgress
-          currentTier={tier}
-          nextTier={nextTier}
-          tierProgress={tierProgress}
-          pointsToNext={pointsToNext}
-          isLoading={isLoading}
-        />
-
-        {/* Stats Row */}
-        <StatsRow
-          totalEarned={totalEarned}
-          totalRedeemed={totalRedeemed}
-          activeCoupons={coupons.length}
-          isLoading={isLoading}
-        />
-
-        {/* Coupons Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-bold text-ink">Your Coupons</h2>
-            {coupons.length > 0 && (
-              <span className="px-2 py-1 bg-brand-purple text-white text-xs font-semibold rounded-full">
-                {coupons.length}
-              </span>
-            )}
-          </div>
-
-          {isLoading ? (
-            <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0 snap-x">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-lg p-4 border border-border flex-shrink-0 w-72 animate-pulse">
-                  <div className="h-6 bg-border rounded w-20 mb-2"></div>
-                  <div className="h-4 bg-border rounded w-24 mb-4"></div>
-                  <div className="h-8 bg-border rounded w-full"></div>
-                </div>
-              ))}
-            </div>
-          ) : coupons.length > 0 ? (
-            <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0 snap-x md:grid md:grid-cols-1 lg:grid-cols-2 md:gap-4">
-              {coupons.map((coupon) => (
-                <CouponCard
-                  key={coupon.id}
-                  code={coupon.code}
-                  description={coupon.description}
-                  discountPercentage={coupon.discount_percentage}
-                  expiresIn={coupon.expires_in_days}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState />
+      {/* Coupons section */}
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#1f2937', margin: 0 }}>Your Coupons</h2>
+          {coupons.length > 0 && (
+            <span style={{ background: '#782B90', color: 'white', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' }}>
+              {coupons.length}
+            </span>
           )}
         </div>
+
+        {isLoading ? (
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {[1,2,3].map(i => (
+              <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #f0e6f5', flexShrink: 0, width: '240px', height: '110px' }} />
+            ))}
+          </div>
+        ) : coupons.length > 0 ? (
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {coupons.map(coupon => (
+              <CouponCard
+                key={coupon.id}
+                code={coupon.code}
+                description={coupon.description}
+                discountPercentage={coupon.discount_percentage}
+                expiresIn={coupon.expires_in_days}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState />
+        )}
       </div>
     </div>
   );

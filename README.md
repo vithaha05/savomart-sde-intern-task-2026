@@ -1,35 +1,16 @@
 # Savomart Loyalty Companion App
 
-Production-ready scaffold for the Savomart SDE Intern Task 2026.
+**Candidate:** Vithahaselvi Haribalajhee, M.Sc. Theoretical Computer Science, PSG College of Technology
+**Repo:** https://github.com/vithaha05/savomart-sde-intern-task-2026
+**Frontend:** https://savomart-peach.vercel.app
+**Backend:** https://savomart-backend-v5el.onrender.com
+**Demo video:** *(link added after recording)*
 
-## Stack
+---
 
-- Backend: FastAPI, SQLAlchemy async, PostgreSQL
-- Frontend: React, Vite
-- Deployment: Render for backend and database, Vercel for frontend
-- Brand colors: `#782B90` and `#FFF200`
+## 1. Setup — local end-to-end
 
-## Project Structure
-
-```text
-savomart-sde-intern-task-2026/
-├── backend/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── routers/
-│   │   ├── services/
-│   │   └── utils/
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── Dockerfile
-└── frontend/
-```
-
-## Backend
+### Backend
 
 ```bash
 cd backend
@@ -37,12 +18,12 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+# Edit .env — set DATABASE_URL, SECRET_KEY, OTP_DEV_MODE=true
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-The API health check is available at `GET /api/health`.
-
-## Frontend
+### Frontend
 
 ```bash
 cd frontend
@@ -50,89 +31,211 @@ npm install
 npm run dev
 ```
 
-## Environment
+Open http://localhost:5173
 
-Backend configuration is loaded from `backend/.env` using `pydantic-settings`.
-Use `backend/.env.example` as the source of required environment variables.
+---
 
-## Deployment Notes
+## 2. How to log in / test the app
 
-- Set backend environment variables in Render.
-- Use a Render PostgreSQL database URL with the `postgresql+asyncpg://` scheme.
-- Set frontend environment variables in Vercel when API integration is added.
+1. Open the login page
+2. Enter any valid 10-digit Indian mobile number (e.g. `9876543210`)
+3. Click **Send OTP**
+4. In dev mode (`OTP_DEV_MODE=true`), the OTP appears directly in the UI — no SMS gateway needed
+5. Enter the 6-digit OTP and verify
+6. You land on the loyalty dashboard
 
-## Deploying Backend to Render (step-by-step)
+**Sample credentials (run seed script first):**
+- `9876543210` — 250 pts, Silver tier
+- `9876543211` — 1500 pts, Gold tier
+- `9876543212` — 6200 pts, Platinum tier
 
-1. Create a Render account and connect your GitHub account.
-2. In your Render dashboard, create a new PostgreSQL database (Free plan). Name it `savomart-db`.
-3. Create a new Web Service → Select `Docker` and point to this repository. For the Dockerfile path enter `backend/Dockerfile`.
-4. In the Web Service settings, set the following environment variables (Render UI) — see descriptions below:
-	- `DATABASE_URL` — set from the database you created (Render can populate it automatically when you select the DB in `render.yaml`).
-	- `SECRET_KEY` — strong random secret for signing tokens.
-	- `FRONTEND_URL` — your frontend origin (e.g. `https://savomart-sde-intern-task-2026.vercel.app`).
-	- `GROQ_API_KEY` — (optional) if using external Groq APIs.
-	- `OTP_DEV_MODE` — `true` or `false`.
-	- `SAVOMART_API_URL` — (optional) internal Savomart bridge URL.
-	- `SAVOMART_API_TOKEN` — (optional) token for Savomart bridge.
-	- `SUPPORT_PHONE` — contact phone number for support messages.
-	- `SUPPORT_EMAIL` — contact email for support messages.
-
-5. Deploy. Render will build the Docker image using `backend/Dockerfile`. The container runs `alembic upgrade head` before starting `uvicorn`.
-
-Notes:
-- The backend exposes a public health endpoint at `GET /health` which returns service status.
-- On Render free tier, instances have 512MB RAM and may spin down after inactivity; expect cold starts.
-- To run the seed script on Render after deploy, use a one-off job or run the `scripts/seed_data.py` locally against the deployed database.
-
-Environment variables reference (what to set on Render):
-
-- `DATABASE_URL` — (required) Postgres connection string provided by Render. Must be available to the container before migrations run. Render can inject this from the created DB.
-- `SECRET_KEY` — (required) JWT secret used by the backend.
-- `FRONTEND_URL` — (recommended) Frontend origin to allow CORS.
-- `GROQ_API_KEY` — (optional) external API key used by some services.
-- `OTP_DEV_MODE` — (optional) when `true` bypasses OTP for development.
-- `SAVOMART_API_URL` & `SAVOMART_API_TOKEN` — (optional) bridge service URL and token.
-- `SUPPORT_PHONE` & `SUPPORT_EMAIL` — (optional) displayed in support messages.
-
-If you prefer to use the `render.yaml` manifest, push it to the repo root and Render will auto-detect the services and database configuration.
-
-## Deploying Frontend to Vercel
-
-1. Install the Vercel CLI globally:
-
+Run seed data once after migrations:
 ```bash
-npm i -g vercel
+cd backend
+python3 scripts/seed_data.py
 ```
 
-2. Log in and deploy:
+---
+
+## 3. Data model + schema
+
+| Model | Key fields | Purpose |
+|---|---|---|
+| `users` | id, mobile_number, name, email, is_active | Auth identity |
+| `loyalty_profiles` | user_id, points_balance, tier, total_earned, total_redeemed | Loyalty state |
+| `coupons` | code, discount_type, discount_value, valid_until, is_used | User coupons |
+| `otps` | mobile_number, otp_code (HMAC hash), expires_at, is_used | OTP lifecycle |
+| `offers` | title, discount_label, is_all_stores, store_ids, valid_until | Store offers |
+| `support_tickets` | name, contact, issue_category, description, status | Support requests |
+
+**Tier logic:** Silver = 0–999 pts, Gold = 1000–4999 pts, Platinum = 5000+ pts
+
+**Chat ticket extraction:** Savi captures structured data from conversation and appends rows to `backend/data/support_tickets.xlsx`. Ticket IDs follow `SAVO-YYYYMMDD-XXXX`.
+
+---
+
+## 4. Tech and library choices
+
+### Backend
+- **FastAPI** — async, auto-validated, OpenAPI docs out of the box
+- **SQLAlchemy async + asyncpg** — non-blocking Postgres access built for concurrency
+- **Alembic** — schema migrations with offline SQL support (no local DB needed for CI)
+- **python-jose** — JWT signing and verification
+- **passlib + HMAC** — OTP hashing; OTPs are never stored in plaintext
+- **groq (Python SDK)** — Llama 3.3 70B for Savi agent and structured JSON extraction
+- **openpyxl** — lightweight Excel ticket archive for the support team
+
+### Frontend
+- **React 18 + Vite** — fast SPA development and production builds
+- **Tailwind CSS v3** — utility-first, consistent brand styling with no custom CSS files
+- **Axios** — HTTP client with JWT interceptors and 401 auto-redirect
+- **TanStack Query** — data fetching, caching, and loading states
+- **React Router v6** — client-side navigation with protected routes
+- **react-leaflet + Leaflet** — interactive store map using OpenStreetMap (fully free)
+
+### Deployment
+- **Render** — Docker-based backend + PostgreSQL free tier
+- **Vercel** — static frontend with SPA routing via `vercel.json`
+
+---
+
+## 5. Design decisions and trade-offs
+
+**OTP via mobile number**
+Mobile OTP is the standard in Indian consumer apps. Dev mode returns the OTP directly in the API response — no SMS gateway required locally. The architecture is MSG91-ready: `app/utils/otp.py` has a single `send_otp()` integration point that raises `NotImplementedError` in production until a real provider is wired in. This was a deliberate choice: it lets the full auth flow be tested end-to-end without a paid dependency.
+
+**Savi as a conversational form**
+Rather than a rigid ticket form, Savi collects support details through natural conversation. This reduces drop-off and makes the experience feel more human. The structured extraction happens in a second Groq call with JSON-mode output — deterministic and auditable.
+
+**Excel ticket archive**
+The support team gets a `support_tickets.xlsx` file they can open immediately without a dashboard. In production I would replace this with a Postgres-backed ticket service and an admin view, but for a 36-hour MVP it's the right call.
+
+**Haversine from scratch**
+Nearest store calculation uses a hand-rolled haversine formula rather than a geopy dependency. Fewer dependencies, same result, and it's a single function.
+
+---
+
+## 6. Known issues and what I'd improve
+
+**Known issues**
+- No real SMS delivery. `OTP_DEV_MODE=true` returns OTPs in the response.
+- Render free tier cold starts can delay the first request by up to 50 seconds.
+- `support_tickets.xlsx` is a proof-of-concept archive, not horizontally scalable.
+- CORS requires `FRONTEND_URL` to be set correctly on Render.
+
+**With more time**
+- Integrate MSG91 or Fast2SMS for real OTP delivery
+- Persist support tickets in Postgres with an admin dashboard
+- Add end-to-end tests for auth, chat, and support flows
+- Harden token refresh and session expiry handling
+- Improve Savi's extraction reliability with few-shot examples in the system prompt
+
+---
+
+## 7. OTP strategy reasoning
+
+OTPs are stored as HMAC-SHA256 hashes — never plaintext. They expire in 5 minutes, are single-use, and are rate-limited to 3 requests per mobile per 10 minutes.
+
+In dev mode (`OTP_DEV_MODE=true`), the generated OTP is returned in the API response so the full flow can be tested without an SMS gateway. This is clearly flagged in the UI with a yellow banner.
+
+The integration point is `app/utils/otp.py → send_otp()`. Swapping in MSG91 requires adding credentials to `.env` and implementing one function — nothing else changes.
+
+---
+
+## 8. AI agent design — Savi
+
+**Why a named assistant**
+Savi is Savomart's virtual assistant. A named, warm persona reduces the friction of submitting a support issue. Customers describe their problem naturally instead of filling out a form.
+
+**Conversation → structured data pipeline**
+1. User messages stream through Groq Llama 3.3 70B with a crafted system prompt
+2. Savi collects: name, contact, issue_category, description through natural conversation
+3. When Savi confirms ("I'll log this for you"), a second Groq call extracts structured JSON
+4. The structured data is appended to `support_tickets.xlsx` with a `SAVO-YYYYMMDD-XXXX` ticket ID
+5. The ticket ID is returned to the customer in the chat
+
+**Why Groq over OpenAI**
+Groq's inference speed makes the chat feel responsive. Llama 3.3 70B handles JSON extraction reliably. It's also free-tier friendly for a 36-hour build.
+
+---
+
+## 9. Architecture overview
+Browser (Vercel)
+│
+├── React SPA
+│   ├── Auth (OTP login)
+│   ├── Dashboard (loyalty, coupons)
+│   ├── Offers
+│   ├── Stores (Leaflet map + list)
+│   ├── Support (contact + ticket form)
+│   └── Savi chat (AI agent)
+│
+▼
+FastAPI (Render Docker)
+├── /auth        — OTP send/verify, JWT
+├── /profile     — loyalty profile + coupons
+├── /offers      — active offers
+├── /stores      — proxy + cache Savomart live API, haversine nearest
+├── /support     — contact info + ticket creation
+└── /chat        — Savi agent (Groq Llama 3.3 70B)
+│
+├── PostgreSQL (Render)
+│   └── users, loyalty_profiles, coupons, otps, offers, support_tickets
+│
+└── Savomart Live API
+└── https://internal-service.savomart.in/bridge/api/store/list
+
+---
+
+## 10. How I used AI tools
+
+- **Claude (Anthropic)** — shaped the system architecture, phase-by-phase build plan, 5-layer context prompts for each module, Savi's system prompt and personality design, and debugging integration issues across the stack
+- **Codex (OpenAI)** — agentic code generation for backend modules including models, routers, services, and auth system
+- **GitHub Copilot** — inline code suggestions and boilerplate during implementation inside VS Code
+- **Antigravity** — agentic frontend development for React screens including the dashboard, offers, stores map, support, and Savi chat UI
+
+AI was used to accelerate scaffolding, boilerplate, and code generation. Architecture decisions, trade-off reasoning, prompt design, and integration debugging were done manually.
+
+---
+
+## 11. Deployment
+
+### Backend (Render)
+
+1. Create Render account, connect GitHub repo
+2. Create PostgreSQL database: `savomart-db` (free tier, Singapore)
+3. Create Web Service: Docker, Dockerfile path `backend/Dockerfile`, Docker context `backend`
+4. Set environment variables:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Internal Postgres URL from Render (`postgresql+asyncpg://...`) |
+| `SECRET_KEY` | Any strong random string |
+| `ALGORITHM` | `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `10080` |
+| `GROQ_API_KEY` | Your Groq API key |
+| `OTP_DEV_MODE` | `true` |
+| `SAVOMART_API_URL` | `https://internal-service.savomart.in/bridge/api/store/list` |
+| `SAVOMART_API_TOKEN` | `savo-bridge-cron-secret` |
+| `FRONTEND_URL` | `https://savomart-peach.vercel.app` |
+
+5. Deploy. Render builds the Docker image, runs `alembic upgrade head`, then starts uvicorn.
+6. Verify: `GET https://savomart-backend-v5el.onrender.com/health`
+
+### Frontend (Vercel)
 
 ```bash
-vercel login
 cd frontend
-npm install
-vercel
+npx vercel --prod
 ```
 
-3. In the Vercel project dashboard, set the environment variable `VITE_API_URL` to your Render backend URL (e.g. `https://savomart-backend.onrender.com`).
+Set `VITE_API_URL=https://savomart-backend-v5el.onrender.com` in Vercel dashboard → Environment Variables → Redeploy.
 
-4. Trigger a redeploy after setting the env var.
+---
 
-Vercel config is provided in `frontend/vercel.json` which sets the build command to `npm run build`, output directory to `dist`, and rewrites non-API routes to `/index.html` for SPA routing.
+## 12. Health check
 
-Files added for Vercel deployment:
-
-- `frontend/vercel.json` — Vercel build configuration and SPA rewrite.
-- `frontend/.env.production` — production env placeholder with `VITE_API_URL`.
-- `frontend/.env.development` — development env with `VITE_API_URL=http://localhost:8000`.
-
-Integration checklist (do these after both services are deployed):
-
-```
-1. Update Render `FRONTEND_URL` to your Vercel URL (e.g. https://your-site.vercel.app).
-2. Ensure `FRONTEND_URL` is added to backend CORS origins (backend will append FRONTEND_URL automatically).
-3. In Vercel, set `VITE_API_URL` to the Render backend URL (https://savomart-backend.onrender.com).
-4. Trigger a redeploy on Vercel.
-5. Test the frontend: login flow, store pages, and chat flow end-to-end.
-6. Verify the `/health` endpoint on the Render backend returns the expected JSON.
-7. If using Savomart live APIs, confirm `SAVOMART_API_URL` and `SAVOMART_API_TOKEN` are set on Render.
+```bash
+curl https://savomart-backend-v5el.onrender.com/health
+# {"status":"ok","service":"savomart-api","version":"1.0.0"}
 ```

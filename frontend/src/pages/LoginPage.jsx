@@ -32,7 +32,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await axiosInstance.post('/auth/send-otp', { mobile });
+      const response = await axiosInstance.post('/auth/send-otp', { mobile_number: mobile });
       setDevOtp(response.data.dev_otp || '');
       setStep(2);
       setResendCooldown(30);
@@ -73,11 +73,11 @@ export default function LoginPage() {
     setError('');
     try {
       const response = await axiosInstance.post('/auth/verify-otp', {
-        mobile,
-        otp: otpCode,
+        mobile_number: mobile,
+        otp_code: otpCode,
       });
       
-      login(response.data.token, response.data.user);
+      login(response.data.access_token, response.data.user);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid OTP. Try again.');
@@ -98,7 +98,7 @@ export default function LoginPage() {
     
     setLoading(true);
     try {
-      const response = await axiosInstance.post('/auth/send-otp', { mobile });
+      const response = await axiosInstance.post('/auth/send-otp', { mobile_number: mobile });
       setDevOtp(response.data.dev_otp || '');
       setResendCooldown(30);
       setError('');

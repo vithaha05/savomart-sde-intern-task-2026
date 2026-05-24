@@ -1,40 +1,28 @@
-import React, { useState } from 'react'
+import { useState } from 'react';
 
 export default function TicketConfirmCard({ ticketId }) {
-  const [copied, setCopied] = useState(false)
-
+  const [copied, setCopied] = useState(false);
   const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(ticketId)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (e) {
-      // ignore
-    }
-  }
-
+    try { await navigator.clipboard.writeText(ticketId); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
+  };
   return (
-    <div className="w-full max-w-md bg-white border rounded-lg p-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-600 font-bold">✓</div>
-        <div className="flex-1">
-          <div className="font-semibold">Your request has been logged!</div>
-          <div className="text-sm text-gray-600">Our support team will reach out within 24 hours.</div>
+    <div style={{ background: 'white', border: '2px solid #22c55e', borderRadius: '12px', padding: '16px', maxWidth: '300px', width: '100%', boxShadow: '0 2px 8px rgba(34,197,94,0.15)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f0fdf4', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>✓</div>
+        <div>
+          <p style={{ fontWeight: '700', fontSize: '13px', color: '#1f2937', margin: 0 }}>Request logged!</p>
+          <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>We'll reach out within 24 hours.</p>
         </div>
       </div>
-
-      <div className="mt-3 flex items-center justify-between bg-gray-50 p-3 rounded">
+      <div style={{ background: '#f9f5fb', borderRadius: '8px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="text-xs text-gray-500">Ticket ID</div>
-          <div className="font-mono font-medium">{ticketId}</div>
+          <p style={{ fontSize: '10px', color: '#9ca3af', fontWeight: '600', textTransform: 'uppercase', margin: '0 0 2px' }}>Ticket ID</p>
+          <p style={{ fontFamily: 'monospace', fontWeight: '800', color: '#782B90', fontSize: '13px', margin: 0 }}>{ticketId}</p>
         </div>
-        <button
-          onClick={copy}
-          className="ml-3 px-3 py-1 bg-purple-600 text-white rounded hover:opacity-90"
-        >
-          {copied ? 'Copied' : 'Copy'}
+        <button onClick={copy} style={{ background: '#782B90', color: 'white', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+          {copied ? '✓ Copied' : 'Copy'}
         </button>
       </div>
     </div>
-  )
+  );
 }

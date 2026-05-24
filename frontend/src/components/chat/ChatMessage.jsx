@@ -1,84 +1,32 @@
-import React from 'react'
-
-function formatTime(iso) {
-  try {
-    const d = new Date(iso)
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  } catch (e) {
-    return ''
-  }
-}
-
 export default function ChatMessage({ message, showAvatar }) {
-  const isUser = message.role === 'user'
-  const isError = message.error
-
-  return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {!isUser && showAvatar && (
-        <div className="mr-3">
-          <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">S</div>
-        </div>
-      )}
-
-      <div className={`max-w-[80%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
-        <div
-          className={`px-4 py-2 rounded-lg whitespace-pre-wrap ${isUser ? 'text-white' : 'text-gray-900'}`}
-          style={{ backgroundColor: isUser ? '#782B90' : '#F3E8F7' }}
-        >
-          <div>{message.content}</div>
-        </div>
-
-        <div className="text-[11px] text-gray-400 mt-1">
-          {isError ? (
-            <span className="text-sm text-red-500">Savi is taking a short break. Please try again.</span>
-          ) : (
-            <span>{formatTime(message.timestamp)}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-export default function ChatMessage({ message, showAvatar }) {
-  const isSavi = message.role === 'assistant';
+  const isUser = message.role === 'user';
   const time = message.timestamp
     ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : '';
 
-  return (
-    <div className={`flex items-end gap-2 mb-3 ${isSavi ? 'justify-start' : 'justify-end'}`}>
-      {/* Savi avatar — only on first message in a group */}
-      {isSavi && (
-        <div className="flex-shrink-0 w-8 h-8">
-          {showAvatar ? (
-            <div className="w-8 h-8 rounded-full bg-brand-purple flex items-center justify-center shadow-sm">
-              <span className="text-white text-xs font-bold">S</span>
-            </div>
-          ) : (
-            <div className="w-8 h-8" /> /* spacer */
-          )}
-        </div>
-      )}
-
-      <div className={`max-w-[75%] md:max-w-[65%] ${isSavi ? '' : 'order-1'}`}>
-        {/* Bubble */}
-        <div
-          className={`px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${
-            isSavi
-              ? 'bg-brand-purple-light text-ink rounded-2xl rounded-bl-md'
-              : 'bg-brand-purple text-white rounded-2xl rounded-br-md'
-          }`}
-        >
+  if (isUser) return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+      <div>
+        <div style={{ background: '#782B90', color: 'white', borderRadius: '16px 16px 4px 16px', padding: '10px 14px', maxWidth: '75vw', fontSize: '14px', lineHeight: '1.5', wordBreak: 'break-word' }}>
           {message.content}
         </div>
+        {time && <p style={{ fontSize: '10px', color: '#9ca3af', marginTop: '3px', textAlign: 'right' }}>{time}</p>}
+      </div>
+    </div>
+  );
 
-        {/* Timestamp */}
-        {time && (
-          <p className={`text-[10px] text-muted/60 mt-1 ${isSavi ? 'text-left ml-1' : 'text-right mr-1'}`}>
-            {time}
-          </p>
-        )}
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '10px' }}>
+      <div style={{ width: '32px', height: '32px', flexShrink: 0 }}>
+        {showAvatar
+          ? <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#782B90', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '13px' }}>S</div>
+          : <div style={{ width: '32px', height: '32px' }} />}
+      </div>
+      <div>
+        <div style={{ background: message.error ? '#fef2f2' : '#f3e8f7', color: message.error ? '#dc2626' : '#1f2937', borderRadius: '4px 16px 16px 16px', padding: '10px 14px', maxWidth: '70vw', fontSize: '14px', lineHeight: '1.5', wordBreak: 'break-word' }}>
+          {message.content}
+        </div>
+        {time && <p style={{ fontSize: '10px', color: '#9ca3af', marginTop: '3px', marginLeft: '4px' }}>{time}</p>}
       </div>
     </div>
   );

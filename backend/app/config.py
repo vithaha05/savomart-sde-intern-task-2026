@@ -1,3 +1,4 @@
+from typing import Optional
 from functools import lru_cache
 
 from pydantic import Field, field_validator
@@ -28,7 +29,7 @@ class Settings(BaseSettings):
         default="Monday to Saturday, 9:00 AM - 8:00 PM IST",
         alias="SUPPORT_OPERATING_HOURS",
     )
-    frontend_url: str | None = Field(default=None, alias="FRONTEND_URL")
+    frontend_url: Optional[str] = Field(default=None, alias="FRONTEND_URL")
 
     cors_origins: list[str] = Field(
         default=[

@@ -163,7 +163,7 @@ export default function LoginPage() {
           <p className="text-muted text-center text-sm mb-8">Sent to +91 {mobile.slice(0, 2)}****{mobile.slice(6)}</p>
 
           {devOtp && (
-            <div className="mb-6 p-3 bg-brand-yellow/20 border border-brand-yellow rounded text-sm text-ink">
+            <div className="mb-6 p-3 bg-yellow-50 border border-brand-yellow rounded text-sm text-brand-purple">
               <span className="font-semibold">Dev mode:</span> OTP is <span className="font-mono font-bold">{devOtp}</span>
             </div>
           )}

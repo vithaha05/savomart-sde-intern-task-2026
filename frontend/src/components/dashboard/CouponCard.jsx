@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 function ExpiryBadge({ expiresIn }) {
   const isExpiringSoon = expiresIn < 7;
-  const bgClass = isExpiringSoon ? 'bg-brand-yellow/20 text-brand-yellow' : 'bg-muted/20 text-muted';
-  const dotClass = isExpiringSoon ? 'bg-brand-yellow' : 'bg-muted';
+  const bgClass = isExpiringSoon ? 'bg-brand-yellow text-brand-purple' : 'bg-muted/20 text-muted';
+  const dotClass = isExpiringSoon ? 'bg-brand-purple' : 'bg-muted';
 
   return (
     <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${bgClass}`}>
@@ -37,10 +37,10 @@ export default function CouponCard({ code, description, discountPercentage, expi
   }
 
   return (
-    <div className="bg-white rounded-lg p-4 border border-border flex-shrink-0 w-72 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg p-4 border border-border flex-shrink-0 w-72 shadow-sm hover:shadow-md transition-shadow border-l-4 border-brand-purple">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-1">Discount Code</p>
+          <p className="text-xs font-semibold text-brand-purple uppercase tracking-wide mb-1">Discount Code</p>
           <p className="font-mono font-bold text-lg text-brand-purple break-all">{code}</p>
         </div>
         <ExpiryBadge expiresIn={expiresIn} />
@@ -54,7 +54,7 @@ export default function CouponCard({ code, description, discountPercentage, expi
         </div>
         <button
           onClick={handleCopy}
-          className="px-4 py-2 bg-brand-purple text-white font-semibold rounded hover:bg-brand-purple/90 transition-colors text-sm whitespace-nowrap"
+          className="px-4 py-2 bg-white border border-brand-purple text-brand-purple font-semibold rounded hover:bg-brand-purple/5 transition-colors text-sm whitespace-nowrap"
         >
           {copied ? '✓ Copied!' : 'Copy Code'}
         </button>

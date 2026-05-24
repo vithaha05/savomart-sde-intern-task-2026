@@ -9,7 +9,7 @@ function getTimeGreeting() {
 
 function TierBadge({ tier }) {
   return (
-    <div className="inline-block px-3 py-1 rounded-full bg-white/20 text-brand-yellow font-semibold text-sm">
+    <div className="inline-block px-3 py-1 rounded-full bg-brand-yellow text-brand-purple font-semibold text-sm">
       {tier} Member
     </div>
   );
@@ -17,7 +17,7 @@ function TierBadge({ tier }) {
 
 function PulseRing() {
   return (
-    <svg className="w-2 h-2 text-brand-yellow" fill="currentColor" viewBox="0 0 8 8">
+    <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 8 8">
       <circle cx="4" cy="4" r="4" />
     </svg>
   );

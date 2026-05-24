@@ -40,20 +40,20 @@ export default function TierProgress({ currentTier, nextTier, tierProgress, poin
 
   return (
     <div className="bg-white rounded-xl p-4 md:p-6 mb-6 shadow-sm border border-border">
-      <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-4">
+      <p className="text-xs font-medium text-brand-purple uppercase tracking-wide mb-4">
         Tier Progress
       </p>
 
       <div className="flex items-center gap-3 mb-4">
         <TierIcon tier={currentTier || 'Silver'} isActive={true} />
         <div className="flex-1">
-          <div className="w-full h-2 bg-border rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-brand-purple to-brand-purple-dark rounded-full transition-all duration-1000 ease-out"
+              className="h-full bg-brand-purple rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${progressWidth}%` }}
             ></div>
           </div>
-          <p className="text-xs text-muted mt-2">
+          <p className="text-xs text-brand-purple mt-2">
             {pointsToNext} points to <strong>{nextTier || 'Gold'}</strong>
           </p>
         </div>

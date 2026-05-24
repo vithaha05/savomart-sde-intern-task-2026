@@ -22,15 +22,11 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-border px-4 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between">
         <div className="text-2xl font-bold text-brand-purple">Savomart</div>
-        <button
-          onClick={handleLogout}
-          className="w-10 h-10 rounded-full bg-brand-purple/10 flex items-center justify-center text-brand-purple hover:bg-brand-purple/20 transition-colors font-semibold"
-          title="Logout"
-        >
+        <div className="w-8 h-8 flex-shrink-0 rounded-full bg-brand-purple/10 flex items-center justify-center text-brand-purple">
           👤
-        </button>
+        </div>
       </header>
 
       <main className="flex-1 pb-24 px-4 py-4 md:pb-4 md:px-6 md:py-6">

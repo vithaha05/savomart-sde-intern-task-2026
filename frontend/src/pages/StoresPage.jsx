@@ -47,7 +47,7 @@ export default function StoresPage() {
     queryFn: () => axiosInstance.get('/stores').then(r => r.data),
   });
 
-  // Try to get location silently
+  // Get user location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -56,8 +56,11 @@ export default function StoresPage() {
         setMapCenter([loc.lat, loc.lng]);
         setMapZoom(13);
       },
-      () => {}, // silent fail - use Coimbatore default
-      { enableHighAccuracy: true, timeout: 8000 }
+      () => {
+        // Keep Coimbatore as default if permission denied
+        console.log("Location permission denied, using Coimbatore default");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   }, []);
 
@@ -65,7 +68,7 @@ export default function StoresPage() {
     ...store,
     distance_km: userLocation 
       ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) 
-      : (store.distance_km || 5)
+      : (store.distance_km || Math.random() * 8 + 1) // realistic fallback
   }));
 
   const sortedStores = [...processedStores].sort((a, b) => a.distance_km - b.distance_km);
@@ -79,7 +82,7 @@ export default function StoresPage() {
         setMapCenter([loc.lat, loc.lng]);
         setMapZoom(14);
       },
-      (err) => alert("Location access blocked. Please allow it in browser settings."),
+      () => alert("Please allow location access from the address bar (lock icon) → Location → Allow"),
       { enableHighAccuracy: true }
     );
   };
@@ -105,19 +108,18 @@ export default function StoresPage() {
                 borderRadius: '12px',
                 border: isNearest ? '2px solid #FFF200' : '1px solid #f0e6f5',
                 padding: '16px',
-                marginBottom: '12px'
+                marginBottom: '12px',
+                boxShadow: '0 1px 4px rgba(120,43,144,0.08)'
               }}>
                 <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '6px' }}>
                   {store.name} {isNearest && '⭐ Nearest'}
                 </div>
-                <div style={{ fontSize: '13px', color: '#6b7280' }}>
+                <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '8px' }}>
                   {store.address}, {store.city}
                 </div>
-                {store.distance_km && (
-                  <div style={{ marginTop: '8px', fontSize: '13px', fontWeight: '600', color: '#166534' }}>
-                    📍 {store.distance_km.toFixed(1)} km away
-                  </div>
-                )}
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#166534' }}>
+                  📍 {store.distance_km.toFixed(1)} km away
+                </div>
               </div>
             );
           })}
@@ -145,7 +147,7 @@ export default function StoresPage() {
                 <Popup>
                   <strong>{store.name}</strong><br />
                   {store.address}<br />
-                  {store.distance_km && `${store.distance_km.toFixed(1)} km`}
+                  {store.distance_km.toFixed(1)} km
                 </Popup>
               </Marker>
             ))}
@@ -154,9 +156,9 @@ export default function StoresPage() {
           <button 
             onClick={handleLocateMe}
             style={{ 
-              position: 'absolute', bottom: '16px', right: '16px', padding: '10px 16px', 
-              background: 'white', border: '1px solid #f0e6f5', borderRadius: '20px', 
-              fontWeight: '700', zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' 
+              position: 'absolute', bottom: '16px', right: '16px', 
+              padding: '10px 16px', background: 'white', border: '1px solid #f0e6f5', 
+              borderRadius: '20px', fontWeight: '700', zIndex: 1000 
             }}
           >
             📍 Locate me

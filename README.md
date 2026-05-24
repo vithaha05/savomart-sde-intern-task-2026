@@ -4,7 +4,7 @@
 **Repo:** https://github.com/vithaha05/savomart-sde-intern-task-2026
 **Frontend:** https://savomart-peach.vercel.app
 **Backend:** https://savomart-backend-v5el.onrender.com
-**Demo video:** *(link added after recording)*
+**Demo video:** https://drive.google.com/file/d/1ZYqfJ9Toy5K5p4isiaVuItAn7O9aNhp4/view?usp=sharing
 
 ---
 

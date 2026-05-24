@@ -22,39 +22,27 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between sticky top-0 z-40">
-        <div className="text-2xl font-bold text-brand-purple">Savomart</div>
-        <button
-          onClick={handleLogout}
-          className="w-8 h-8 flex-shrink-0 rounded-full bg-brand-purple/10 flex items-center justify-center text-brand-purple hover:bg-brand-purple/20 transition-colors"
-          title="Logout"
-        >
-          👤
-        </button>
+    <div style={{minHeight:'100vh',background:'white',display:'flex',flexDirection:'column'}}>
+      <header style={{background:'white',borderBottom:'1px solid #f3f4f6',padding:'16px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:40}}>
+        <div style={{fontSize:'1.5rem',fontWeight:'bold',color:'#782B90'}}>Savomart</div>
+        <button onClick={handleLogout} style={{width:'32px',height:'32px',borderRadius:'50%',background:'rgba(120,43,144,0.1)',border:'none',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center'}} title="Logout">👤</button>
       </header>
 
-      <main className="flex-1 pb-24 px-4 py-4">
+      <main style={{flex:1,padding:'16px',paddingBottom:'80px'}}>
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="flex justify-around">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`flex-1 py-3 px-1 flex flex-col items-center gap-1 text-xs font-medium transition-colors ${
-                isActive(item.path)
-                  ? 'text-brand-purple border-t-2 border-brand-purple'
-                  : 'text-gray-400 hover:text-brand-purple'
-              }`}
-            >
-              <span className="text-lg leading-none">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
+      <nav style={{position:'fixed',bottom:0,left:0,right:0,background:'white',borderTop:'1px solid #e5e7eb',zIndex:50,display:'flex'}}>
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => navigate(item.path)}
+            style={{flex:1,padding:'12px 4px',display:'flex',flexDirection:'column',alignItems:'center',gap:'2px',fontSize:'11px',fontWeight:'500',border:'none',background:'none',cursor:'pointer',color: location.pathname === item.path ? '#782B90' : '#9ca3af',borderTop: location.pathname === item.path ? '2px solid #782B90' : '2px solid transparent'}}
+          >
+            <span style={{fontSize:'18px',lineHeight:1}}>{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
       </nav>
     </div>
   );

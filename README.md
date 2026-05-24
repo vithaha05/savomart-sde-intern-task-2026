@@ -95,3 +95,44 @@ Environment variables reference (what to set on Render):
 - `SUPPORT_PHONE` & `SUPPORT_EMAIL` — (optional) displayed in support messages.
 
 If you prefer to use the `render.yaml` manifest, push it to the repo root and Render will auto-detect the services and database configuration.
+
+## Deploying Frontend to Vercel
+
+1. Install the Vercel CLI globally:
+
+```bash
+npm i -g vercel
+```
+
+2. Log in and deploy:
+
+```bash
+vercel login
+cd frontend
+npm install
+vercel
+```
+
+3. In the Vercel project dashboard, set the environment variable `VITE_API_URL` to your Render backend URL (e.g. `https://savomart-backend.onrender.com`).
+
+4. Trigger a redeploy after setting the env var.
+
+Vercel config is provided in `frontend/vercel.json` which sets the build command to `npm run build`, output directory to `dist`, and rewrites non-API routes to `/index.html` for SPA routing.
+
+Files added for Vercel deployment:
+
+- `frontend/vercel.json` — Vercel build configuration and SPA rewrite.
+- `frontend/.env.production` — production env placeholder with `VITE_API_URL`.
+- `frontend/.env.development` — development env with `VITE_API_URL=http://localhost:8000`.
+
+Integration checklist (do these after both services are deployed):
+
+```
+1. Update Render `FRONTEND_URL` to your Vercel URL (e.g. https://your-site.vercel.app).
+2. Ensure `FRONTEND_URL` is added to backend CORS origins (backend will append FRONTEND_URL automatically).
+3. In Vercel, set `VITE_API_URL` to the Render backend URL (https://savomart-backend.onrender.com).
+4. Trigger a redeploy on Vercel.
+5. Test the frontend: login flow, store pages, and chat flow end-to-end.
+6. Verify the `/health` endpoint on the Render backend returns the expected JSON.
+7. If using Savomart live APIs, confirm `SAVOMART_API_URL` and `SAVOMART_API_TOKEN` are set on Render.
+```

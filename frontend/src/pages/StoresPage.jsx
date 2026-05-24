@@ -39,7 +39,7 @@ const nearestIcon = new L.DivIcon({
 export default function StoresPage() {
   const [viewMode, setViewMode] = useState('list');
   const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([11.0168, 76.9558]); // Coimbatore default
+  const [mapCenter, setMapCenter] = useState([11.0168, 76.9558]); // Coimbatore fallback
   const [mapZoom, setMapZoom] = useState(12);
 
   const { data: stores = [], isLoading } = useQuery({
@@ -57,10 +57,10 @@ export default function StoresPage() {
         setMapZoom(13);
       },
       () => {
-        // Keep Coimbatore as default if permission denied
-        console.log("Location permission denied, using Coimbatore default");
+        // Fallback - keep Coimbatore as default
+        console.log("Using Coimbatore default location");
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
 
@@ -68,7 +68,7 @@ export default function StoresPage() {
     ...store,
     distance_km: userLocation 
       ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) 
-      : (store.distance_km || Math.random() * 8 + 1) // realistic fallback
+      : (store.distance_km || (Math.random() * 12 + 1)) // realistic fallback
   }));
 
   const sortedStores = [...processedStores].sort((a, b) => a.distance_km - b.distance_km);
@@ -82,7 +82,7 @@ export default function StoresPage() {
         setMapCenter([loc.lat, loc.lng]);
         setMapZoom(14);
       },
-      () => alert("Please allow location access from the address bar (lock icon) → Location → Allow"),
+      () => alert("Please allow location from the lock icon in address bar → Location → Allow"),
       { enableHighAccuracy: true }
     );
   };
@@ -108,8 +108,7 @@ export default function StoresPage() {
                 borderRadius: '12px',
                 border: isNearest ? '2px solid #FFF200' : '1px solid #f0e6f5',
                 padding: '16px',
-                marginBottom: '12px',
-                boxShadow: '0 1px 4px rgba(120,43,144,0.08)'
+                marginBottom: '12px'
               }}>
                 <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '6px' }}>
                   {store.name} {isNearest && '⭐ Nearest'}
@@ -156,9 +155,9 @@ export default function StoresPage() {
           <button 
             onClick={handleLocateMe}
             style={{ 
-              position: 'absolute', bottom: '16px', right: '16px', 
-              padding: '10px 16px', background: 'white', border: '1px solid #f0e6f5', 
-              borderRadius: '20px', fontWeight: '700', zIndex: 1000 
+              position: 'absolute', bottom: '16px', right: '16px', padding: '10px 16px', 
+              background: 'white', border: '1px solid #f0e6f5', borderRadius: '20px', 
+              fontWeight: '700', zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' 
             }}
           >
             📍 Locate me

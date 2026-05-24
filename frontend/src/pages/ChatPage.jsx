@@ -75,8 +75,8 @@ export default function ChatPage() {
     setWaiting(true);
     try {
       const res = await axiosInstance.post('/chat/message', {
-        message: text,
-        history: messages.map(({ role, content }) => ({ role, content })),
+        user_message: text,
+        messages: messages.map(({ role, content }) => ({ role, content })),
       });
       const data = res?.data || {};
       const reply = data.reply || data.message || "Sorry, I couldn't form a response.";
@@ -95,7 +95,6 @@ export default function ChatPage() {
     <div style={{ display: 'flex', flexDirection: 'column', background: 'white', borderRadius: '12px', border: '1px solid #f0e6f5', overflow: 'hidden', boxShadow: '0 1px 4px rgba(120,43,144,0.08)', minHeight: '70vh' }}>
       <style>{`@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}`}</style>
 
-      {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#782B90,#5a1f6e)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '16px', color: 'white' }}>S</div>
         <div>
@@ -104,7 +103,6 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', background: '#faf5fc', minHeight: '300px', maxHeight: '55vh' }}>
         {messages.map((m, i) => {
           if (m.role === 'ticket') return <TicketCard key={i} ticketId={m.ticketId} />;
@@ -115,7 +113,6 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div style={{ borderTop: '1px solid #f0e6f5', padding: '12px 16px', background: 'white', flexShrink: 0 }}>
         <form onSubmit={send} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
           <textarea value={input} onChange={e => setInput(e.target.value)}

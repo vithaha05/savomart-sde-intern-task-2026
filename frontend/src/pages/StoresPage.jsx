@@ -5,13 +5,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axiosInstance from '../api/axios';
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -22,25 +15,50 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 
 function MapController({ center, zoom }) {
   const map = useMap();
-  useEffect(() => { if (center) map.setView(center, zoom || 12); }, [center, zoom, map]);
+  
+  useEffect(() => {
+    if (center) {
+      map.setView(center, zoom || 12);
+    }
+  }, [center, zoom, map]);
+
+  useEffect(() => {
+    // Invalidate size on mount to ensure tiles render correctly without misalignment/gray squares
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [map]);
+
   return null;
 }
 
 const purpleIcon = new L.DivIcon({
   html: `<div style="width:32px;height:32px;border-radius:50%;background:#782B90;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;">🏪</div>`,
-  iconSize: [32, 32], iconAnchor: [16, 16]
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  className: ''
 });
 
 const nearestIcon = new L.DivIcon({
   html: `<div style="width:36px;height:36px;border-radius:50%;background:#FFF200;border:3px solid #782B90;box-shadow:0 2px 8px rgba(120,43,144,0.4);display:flex;align-items:center;justify-content:center;font-size:18px;">⭐</div>`,
-  iconSize: [36, 36], iconAnchor: [18, 18]
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+  className: ''
+});
+
+const userIcon = new L.DivIcon({
+  html: `<div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px;">🔵</div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+  className: ''
 });
 
 export default function StoresPage() {
   const [viewMode, setViewMode] = useState('list');
   const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([11.0168, 76.9558]); // Coimbatore fallback
-  const [mapZoom, setMapZoom] = useState(12);
+  const [mapCenter, setMapCenter] = useState([12.9716, 77.5946]); // Bangalore center as robust fallback
+  const [mapZoom, setMapZoom] = useState(11);
 
   const { data: stores = [], isLoading } = useQuery({
     queryKey: ['stores'],
@@ -53,12 +71,9 @@ export default function StoresPage() {
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
-        setMapCenter([loc.lat, loc.lng]);
-        setMapZoom(13);
       },
       () => {
-        // Fallback - keep Coimbatore as default
-        console.log("Using Coimbatore default location");
+        console.log("Geolocation permission denied or timed out");
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
@@ -68,11 +83,32 @@ export default function StoresPage() {
     ...store,
     distance_km: userLocation 
       ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) 
-      : (store.distance_km || (Math.random() * 12 + 1)) // realistic fallback
+      : haversineDistance(12.9716, 77.5946, store.lat, store.lng) // Deterministic, stable distance calculation from Bangalore center if user loc is not allowed
   }));
 
   const sortedStores = [...processedStores].sort((a, b) => a.distance_km - b.distance_km);
   const nearestId = sortedStores[0]?.id;
+
+  // Dynamically set map center to highlight stores beautifully
+  useEffect(() => {
+    if (sortedStores.length > 0) {
+      const nearestStore = sortedStores[0];
+      if (userLocation) {
+        // If user is within 100km of a store, center on their location. Otherwise, center on the nearest store.
+        if (nearestStore.distance_km <= 100) {
+          setMapCenter([userLocation.lat, userLocation.lng]);
+          setMapZoom(12);
+        } else {
+          setMapCenter([nearestStore.lat, nearestStore.lng]);
+          setMapZoom(11);
+        }
+      } else {
+        // Fallback: center on the nearest store
+        setMapCenter([nearestStore.lat, nearestStore.lng]);
+        setMapZoom(11);
+      }
+    }
+  }, [stores, userLocation]);
 
   const handleLocateMe = () => {
     navigator.geolocation.getCurrentPosition(
@@ -135,7 +171,7 @@ export default function StoresPage() {
             />
             <MapController center={mapCenter} zoom={mapZoom} />
 
-            {userLocation && <Marker position={[userLocation.lat, userLocation.lng]} />}
+            {userLocation && <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon} />}
 
             {processedStores.map(store => (
               <Marker 

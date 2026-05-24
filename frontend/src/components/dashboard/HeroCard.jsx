@@ -17,7 +17,7 @@ function TierBadge({ tier }) {
 
 function PulseRing() {
   return (
-    <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 8 8">
+    <svg width="24" height="24" className="w-6 h-6 flex-shrink-0 text-brand-yellow" fill="currentColor" viewBox="0 0 8 8">
       <circle cx="4" cy="4" r="4" />
     </svg>
   );
@@ -43,7 +43,9 @@ export default function HeroCard({ user, pointsBalance, tier, isLoading }) {
           <p className="text-sm text-white/70 font-medium">{getTimeGreeting()},</p>
           <h1 className="text-2xl font-bold text-white">{user?.name || 'Guest'}</h1>
         </div>
-        <PulseRing />
+        <span className="w-8 h-8 flex-shrink-0 inline-flex items-center justify-center">
+          <PulseRing />
+        </span>
       </div>
 
       <div className="mb-6">

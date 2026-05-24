@@ -24,9 +24,13 @@ export default function Layout({ children }) {
     <div className="min-h-screen bg-white flex flex-col">
       <header className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between">
         <div className="text-2xl font-bold text-brand-purple">Savomart</div>
-        <div className="w-8 h-8 flex-shrink-0 rounded-full bg-brand-purple/10 flex items-center justify-center text-brand-purple">
+        <button
+          onClick={handleLogout}
+          className="w-8 h-8 flex-shrink-0 rounded-full bg-brand-purple/10 flex items-center justify-center text-brand-purple hover:bg-brand-purple/20 transition-colors"
+          title="Logout"
+        >
           👤
-        </div>
+        </button>
       </header>
 
       <main className="flex-1 pb-24 px-4 py-4 md:pb-4 md:px-6 md:py-6">

@@ -6,7 +6,7 @@ const GREETING = "Hi there! 👋 I'm Savi, your Savomart assistant. I can help w
 function UserBubble({ content }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-      <div style={{ background: '#782B90', color: 'white', borderRadius: '16px 16px 4px 16px', padding: '10px 14px', maxWidth: '75%', fontSize: '14px', lineHeight: '1.5' }}>
+      <div style={{ background: '#782B90', color: 'white', borderRadius: '16px 16px 4px 16px', padding: '10px 14px', maxWidth: '75%', fontSize: '14px', lineHeight: '1.5', wordBreak: 'break-word' }}>
         {content}
       </div>
     </div>
@@ -16,8 +16,8 @@ function UserBubble({ content }) {
 function SaviBubble({ content, error }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
-      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#782B90', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>S</div>
-      <div style={{ background: error ? '#fef2f2' : 'white', border: `1px solid ${error ? '#fecaca' : '#f0e6f5'}`, borderRadius: '4px 16px 16px 16px', padding: '10px 14px', maxWidth: '75%', fontSize: '14px', lineHeight: '1.5', color: error ? '#dc2626' : '#1f2937', boxShadow: '0 1px 3px rgba(120,43,144,0.08)' }}>
+      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg,#782B90,#5a1f6e)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '13px', flexShrink: 0 }}>S</div>
+      <div style={{ background: error ? '#fef2f2' : 'white', border: `1px solid ${error ? '#fecaca' : '#f0e6f5'}`, borderRadius: '4px 16px 16px 16px', padding: '10px 14px', maxWidth: '75%', fontSize: '14px', lineHeight: '1.5', color: error ? '#dc2626' : '#1f2937', boxShadow: '0 1px 3px rgba(120,43,144,0.08)', wordBreak: 'break-word' }}>
         {content}
       </div>
     </div>
@@ -25,13 +25,18 @@ function SaviBubble({ content, error }) {
 }
 
 function TicketCard({ ticketId }) {
+  const [copied, setCopied] = useState(false);
   return (
     <div style={{ display: 'flex', justifyContent: 'center', margin: '12px 0' }}>
-      <div style={{ background: '#f0fdf4', border: '2px solid #22c55e', borderRadius: '12px', padding: '16px 20px', textAlign: 'center', maxWidth: '280px' }}>
+      <div style={{ background: '#f0fdf4', border: '2px solid #22c55e', borderRadius: '12px', padding: '16px 20px', textAlign: 'center', maxWidth: '280px', width: '100%' }}>
         <div style={{ fontSize: '24px', marginBottom: '6px' }}>🎫</div>
         <p style={{ fontSize: '12px', fontWeight: '700', color: '#166534', textTransform: 'uppercase', marginBottom: '4px' }}>Ticket Saved!</p>
-        <p style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: '800', color: '#782B90' }}>{ticketId}</p>
-        <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px' }}>We'll respond within 24 hours</p>
+        <p style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: '800', color: '#782B90', margin: '0 0 8px' }}>{ticketId}</p>
+        <button onClick={async () => { await navigator.clipboard.writeText(ticketId); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+          style={{ background: '#782B90', color: 'white', border: 'none', borderRadius: '6px', padding: '5px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+          {copied ? '✓ Copied' : 'Copy ID'}
+        </button>
+        <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px', marginBottom: 0 }}>We'll respond within 24 hours</p>
       </div>
     </div>
   );
@@ -40,12 +45,11 @@ function TicketCard({ ticketId }) {
 function TypingDots() {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
-      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#782B90', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>S</div>
+      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg,#782B90,#5a1f6e)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '13px', flexShrink: 0 }}>S</div>
       <div style={{ background: 'white', border: '1px solid #f0e6f5', borderRadius: '4px 16px 16px 16px', padding: '12px 16px', boxShadow: '0 1px 3px rgba(120,43,144,0.08)' }}>
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          {[0,1,2].map(i => (
-            <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#782B90', opacity: 0.6, animation: `bounce 1.2s ${i*0.2}s infinite` }} />
-          ))}
+        <style>{`@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}`}</style>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {[0,1,2].map(i => <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#782B90', opacity: 0.7, animation: `td 1.2s ${i*0.2}s infinite` }} />)}
         </div>
       </div>
     </div>
@@ -88,8 +92,8 @@ export default function ChatPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 140px)', background: 'white', borderRadius: '12px', border: '1px solid #f0e6f5', overflow: 'hidden', boxShadow: '0 1px 4px rgba(120,43,144,0.08)' }}>
-      <style>{`@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }`}</style>
+    <div style={{ display: 'flex', flexDirection: 'column', background: 'white', borderRadius: '12px', border: '1px solid #f0e6f5', overflow: 'hidden', boxShadow: '0 1px 4px rgba(120,43,144,0.08)', minHeight: '70vh' }}>
+      <style>{`@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}`}</style>
 
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#782B90,#5a1f6e)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
@@ -101,7 +105,7 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', background: '#faf5fc' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', background: '#faf5fc', minHeight: '300px', maxHeight: '55vh' }}>
         {messages.map((m, i) => {
           if (m.role === 'ticket') return <TicketCard key={i} ticketId={m.ticketId} />;
           if (m.role === 'user') return <UserBubble key={i} content={m.content} />;
@@ -114,15 +118,10 @@ export default function ChatPage() {
       {/* Input */}
       <div style={{ borderTop: '1px solid #f0e6f5', padding: '12px 16px', background: 'white', flexShrink: 0 }}>
         <form onSubmit={send} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
+          <textarea value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }}}
-            placeholder="Ask Savi something..."
-            disabled={waiting}
-            rows={1}
-            style={{ flex: 1, padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', resize: 'none', outline: 'none', fontFamily: 'inherit', minHeight: '42px', maxHeight: '120px' }}
-          />
+            placeholder="Ask Savi something..." disabled={waiting} rows={1}
+            style={{ flex: 1, padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', resize: 'none', outline: 'none', fontFamily: 'inherit', minHeight: '42px', maxHeight: '120px' }} />
           <button type="submit" disabled={waiting || !input.trim()}
             style={{ width: '42px', height: '42px', borderRadius: '50%', background: waiting || !input.trim() ? '#d1d5db' : '#782B90', border: 'none', color: 'white', cursor: waiting || !input.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(45deg)' }}>
@@ -130,7 +129,7 @@ export default function ChatPage() {
             </svg>
           </button>
         </form>
-        <p style={{ fontSize: '10px', color: '#9ca3af', textAlign: 'center', marginTop: '6px' }}>Savi can save support tickets. Just describe your issue.</p>
+        <p style={{ fontSize: '10px', color: '#9ca3af', textAlign: 'center', marginTop: '6px' }}>Savi can save support tickets — just describe your issue.</p>
       </div>
     </div>
   );

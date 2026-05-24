@@ -1,64 +1,39 @@
 import { useState } from 'react';
 
-function ExpiryBadge({ expiresIn }) {
-  const isExpiringSoon = expiresIn < 7;
-  const bgClass = isExpiringSoon ? 'bg-brand-yellow text-brand-purple' : 'bg-muted/20 text-muted';
-  const dotClass = isExpiringSoon ? 'bg-brand-purple' : 'bg-muted';
-
-  return (
-    <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${bgClass}`}>
-      <div className={`w-2 h-2 rounded-full ${dotClass}`}></div>
-      {expiresIn} days
-    </div>
-  );
-}
-
-export default function CouponCard({ code, description, discountPercentage, expiresIn, isLoading }) {
+export default function CouponCard({ code, description, discountPercentage, expiresIn }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg p-4 border border-border flex-shrink-0 w-72 animate-pulse">
-        <div className="h-6 bg-border rounded w-20 mb-2"></div>
-        <div className="h-4 bg-border rounded w-24 mb-4"></div>
-        <div className="h-8 bg-border rounded w-full"></div>
-      </div>
-    );
-  }
+  const isExpiringSoon = expiresIn !== undefined && expiresIn <= 3;
 
   return (
-    <div className="bg-white rounded-lg p-4 border border-border flex-shrink-0 w-72 shadow-sm hover:shadow-md transition-shadow border-l-4 border-brand-purple">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <p className="text-xs font-semibold text-brand-purple uppercase tracking-wide mb-1">Discount Code</p>
-          <p className="font-mono font-bold text-lg text-brand-purple break-all">{code}</p>
-        </div>
-        <ExpiryBadge expiresIn={expiresIn} />
+    <div style={{background:'white',borderRadius:'12px',border:'1px solid #f0e6f5',borderLeft:'4px solid #782B90',padding:'16px',flexShrink:0,minWidth:'240px',boxShadow:'0 1px 4px rgba(120,43,144,0.08)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'8px'}}>
+        <span style={{fontSize:'22px',fontWeight:'800',color:'#782B90'}}>{discountPercentage}% OFF</span>
+        {isExpiringSoon && (
+          <span style={{background:'#FFF200',color:'#782B90',fontSize:'10px',fontWeight:'700',padding:'2px 8px',borderRadius:'10px'}}>Expires soon</span>
+        )}
       </div>
-
-      <p className="text-sm text-muted mb-4 line-clamp-2">{description}</p>
-
-      <div className="flex gap-2">
-        <div className="flex-1 bg-brand-purple/10 rounded px-3 py-2 text-sm font-bold text-brand-purple text-center">
-          {discountPercentage}% Off
-        </div>
+      {description && <p style={{fontSize:'12px',color:'#6b7280',marginBottom:'12px'}}>{description}</p>}
+      <div style={{display:'flex',alignItems:'center',gap:'8px',background:'#f9f5fb',borderRadius:'8px',padding:'8px 12px'}}>
+        <span style={{fontFamily:'monospace',fontSize:'14px',fontWeight:'700',color:'#782B90',flex:1,letterSpacing:'0.1em'}}>{code}</span>
         <button
           onClick={handleCopy}
-          className="px-4 py-2 bg-white border border-brand-purple text-brand-purple font-semibold rounded hover:bg-brand-purple/5 transition-colors text-sm whitespace-nowrap"
+          style={{background:'#782B90',color:'white',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'11px',fontWeight:'600',cursor:'pointer'}}
         >
-          {copied ? '✓ Copied!' : 'Copy Code'}
+          {copied ? '✓' : 'Copy'}
         </button>
       </div>
+      {expiresIn !== undefined && (
+        <p style={{fontSize:'11px',color:'#9ca3af',marginTop:'8px'}}>
+          {expiresIn === 0 ? 'Expires today' : `Expires in ${expiresIn} day${expiresIn !== 1 ? 's' : ''}`}
+        </p>
+      )}
     </div>
   );
 }

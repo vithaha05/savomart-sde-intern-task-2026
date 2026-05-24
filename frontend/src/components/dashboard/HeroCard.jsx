@@ -7,56 +7,38 @@ function getTimeGreeting() {
   return 'Good evening';
 }
 
-function TierBadge({ tier }) {
-  return (
-    <div className="inline-block px-3 py-1 rounded-full bg-brand-yellow text-brand-purple font-semibold text-sm">
-      {tier} Member
-    </div>
-  );
-}
-
-function PulseRing() {
-  return (
-    <svg width="24" height="24" className="w-6 h-6 flex-shrink-0 text-brand-yellow" fill="currentColor" viewBox="0 0 8 8">
-      <circle cx="4" cy="4" r="4" />
-    </svg>
-  );
-}
-
 export default function HeroCard({ user, pointsBalance, tier, isLoading }) {
   const animatedPoints = useCountUp(pointsBalance || 0, 1500);
 
   if (isLoading) {
     return (
-      <div className="w-full bg-gradient-to-br from-brand-purple to-brand-purple-dark rounded-2xl p-6 md:p-8 text-white mb-6 animate-pulse">
-        <div className="h-6 bg-white/20 rounded w-32 mb-6"></div>
-        <div className="h-12 bg-white/20 rounded w-48 mb-6"></div>
-        <div className="h-8 bg-white/20 rounded-full w-32"></div>
+      <div style={{background:'linear-gradient(135deg,#782B90,#5a1f6e)',borderRadius:'16px',padding:'24px',marginBottom:'16px',color:'white'}}>
+        <div style={{height:'16px',background:'rgba(255,255,255,0.2)',borderRadius:'8px',width:'120px',marginBottom:'20px'}}></div>
+        <div style={{height:'40px',background:'rgba(255,255,255,0.2)',borderRadius:'8px',width:'160px',marginBottom:'16px'}}></div>
+        <div style={{height:'28px',background:'rgba(255,255,255,0.2)',borderRadius:'20px',width:'100px'}}></div>
       </div>
     );
   }
 
   return (
-    <div className="w-full bg-gradient-to-br from-brand-purple to-brand-purple-dark rounded-2xl p-6 md:p-8 text-white mb-6 shadow-lg md:max-w-md md:mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div style={{background:'linear-gradient(135deg,#782B90,#5a1f6e)',borderRadius:'16px',padding:'24px',marginBottom:'16px',color:'white',boxShadow:'0 4px 20px rgba(120,43,144,0.3)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'20px'}}>
         <div>
-          <p className="text-sm text-white/70 font-medium">{getTimeGreeting()},</p>
-          <h1 className="text-2xl font-bold text-white">{user?.name || 'Guest'}</h1>
+          <p style={{fontSize:'13px',color:'rgba(255,255,255,0.75)',marginBottom:'4px'}}>{getTimeGreeting()},</p>
+          <h1 style={{fontSize:'22px',fontWeight:'700',color:'white',margin:0}}>{user?.name || 'Guest'}</h1>
         </div>
-        <span className="w-8 h-8 flex-shrink-0 inline-flex items-center justify-center">
-          <PulseRing />
-        </span>
+        <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'rgba(255,255,255,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px'}}>👤</div>
       </div>
-
-      <div className="mb-6">
-        <p className="text-white/70 text-sm mb-1">Your Points Balance</p>
-        <div className="text-5xl font-bold text-white font-mono">
-          {animatedPoints.toLocaleString()}
-          <span className="text-lg font-semibold ml-2">pts</span>
+      <div style={{marginBottom:'20px'}}>
+        <p style={{fontSize:'12px',color:'rgba(255,255,255,0.7)',marginBottom:'4px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Points Balance</p>
+        <div style={{display:'flex',alignItems:'baseline',gap:'6px'}}>
+          <span style={{fontSize:'42px',fontWeight:'800',color:'white',fontFamily:'monospace',lineHeight:1}}>{animatedPoints.toLocaleString()}</span>
+          <span style={{fontSize:'16px',fontWeight:'600',color:'rgba(255,255,255,0.8)'}}>pts</span>
         </div>
       </div>
-
-      <TierBadge tier={tier || 'Silver'} />
+      <div style={{display:'inline-block',background:'#FFF200',color:'#782B90',padding:'6px 16px',borderRadius:'20px',fontSize:'13px',fontWeight:'700'}}>
+        {tier || 'Silver'} Member ✦
+      </div>
     </div>
   );
 }

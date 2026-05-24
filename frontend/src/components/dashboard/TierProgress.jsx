@@ -1,63 +1,27 @@
-import { useEffect, useState } from 'react';
-
-function TierIcon({ tier, isActive = false }) {
-  const sizeClass = isActive ? 'w-12 h-12' : 'w-10 h-10';
-  const bgClass = isActive
-    ? 'bg-brand-purple text-white'
-    : 'bg-border text-muted';
-
-  const tiers = {
-    'Silver': '◈',
-    'Gold': '◆',
-    'Platinum': '✦',
-  };
-
-  return (
-    <div className={`${sizeClass} rounded-full ${bgClass} flex items-center justify-center font-bold text-sm flex-shrink-0`}>
-      {tiers[tier] || '◈'}
-    </div>
-  );
-}
-
 export default function TierProgress({ currentTier, nextTier, tierProgress, pointsToNext, isLoading }) {
-  const [progressWidth, setProgressWidth] = useState(0);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setProgressWidth(Math.min(tierProgress || 0, 100));
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [tierProgress]);
-
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl p-4 md:p-6 mb-6 shadow-sm border border-border animate-pulse">
-        <div className="h-4 bg-border rounded w-32 mb-4"></div>
-        <div className="h-2 bg-border rounded-full w-full"></div>
+      <div style={{background:'white',borderRadius:'12px',padding:'16px',marginBottom:'16px',border:'1px solid #f0e6f5'}}>
+        <div style={{height:'12px',background:'#f3e8f7',borderRadius:'6px',marginBottom:'8px'}}></div>
+        <div style={{height:'8px',background:'#f3e8f7',borderRadius:'4px'}}></div>
       </div>
     );
   }
 
-  return (
-    <div className="bg-white rounded-xl p-4 md:p-6 mb-6 shadow-sm border border-border">
-      <p className="text-xs font-medium text-brand-purple uppercase tracking-wide mb-4">
-        Tier Progress
-      </p>
+  const progress = Math.min(Math.max(tierProgress || 0, 0), 100);
 
-      <div className="flex items-center gap-3 mb-4">
-        <TierIcon tier={currentTier || 'Silver'} isActive={true} />
-        <div className="flex-1">
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-brand-purple rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${progressWidth}%` }}
-            ></div>
-          </div>
-          <p className="text-xs text-brand-purple mt-2">
-            {pointsToNext} points to <strong>{nextTier || 'Gold'}</strong>
-          </p>
-        </div>
-        <TierIcon tier={nextTier || 'Gold'} isActive={false} />
+  return (
+    <div style={{background:'white',borderRadius:'12px',padding:'16px',marginBottom:'16px',border:'1px solid #f0e6f5',boxShadow:'0 1px 4px rgba(120,43,144,0.08)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+        <span style={{fontSize:'13px',fontWeight:'600',color:'#782B90'}}>Tier Progress</span>
+        <span style={{fontSize:'12px',color:'#9ca3af'}}>{pointsToNext > 0 ? `${pointsToNext} pts to ${nextTier}` : `${currentTier} — Max tier!`}</span>
+      </div>
+      <div style={{background:'#f3e8f7',borderRadius:'6px',height:'8px',overflow:'hidden'}}>
+        <div style={{background:'linear-gradient(90deg,#782B90,#a855f7)',height:'100%',borderRadius:'6px',width:`${progress}%`,transition:'width 1s ease'}}></div>
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}>
+        <span style={{fontSize:'11px',fontWeight:'600',color:'#782B90'}}>{currentTier}</span>
+        <span style={{fontSize:'11px',color:'#9ca3af'}}>{nextTier}</span>
       </div>
     </div>
   );

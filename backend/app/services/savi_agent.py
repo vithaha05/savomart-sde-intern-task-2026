@@ -1,4 +1,3 @@
-import os
 import json
 import random
 import string
@@ -12,7 +11,8 @@ settings = get_settings()
 client = AsyncGroq(api_key=settings.groq_api_key)
 
 # Resolve the Excel path relative to this file: backend/data/support_tickets.xlsx
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
+# savi_agent.py → services/ → app/ → backend/  (3 levels up)
+_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 EXCEL_PATH = _DATA_DIR / "support_tickets.xlsx"
 
 SYSTEM_PROMPT = """You are Savi, the friendly, warm virtual assistant for Savomart stores.

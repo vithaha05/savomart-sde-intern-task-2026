@@ -2,173 +2,89 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../api/axios';
 
+function fetchOffers() {
+  return axiosInstance.get('/offers').then(res => res.data);
+}
+
 export default function OffersPage() {
-  const [activeTab, setActiveTab] = useState('All');
+  const [filter, setFilter] = useState('all');
+  const { data: offers = [], isLoading } = useQuery({ queryKey: ['offers'], queryFn: fetchOffers });
 
-  const { data: offers = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['offers'],
-    queryFn: () => axiosInstance.get('/offers').then((res) => res.data),
-  });
-
-  const filteredOffers = offers.filter((offer) => {
-    if (activeTab === 'All') return true;
-    if (activeTab === 'All Stores') return offer.is_all_stores === true;
-    if (activeTab === 'Your Store') return offer.is_all_stores === false;
+  const filtered = offers.filter(o => {
+    if (filter === 'all_stores') return o.is_all_stores;
+    if (filter === 'store_specific') return !o.is_all_stores;
     return true;
   });
 
-  const formatDate = (dateStr) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const tabs = [
+    { key: 'all', label: 'All' },
+    { key: 'all_stores', label: 'All Stores' },
+    { key: 'store_specific', label: 'Your Store' },
+  ];
 
   return (
-    <div className="min-h-screen bg-page-bg py-6">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-ink tracking-tight mb-2">
-            Special Offers
-          </h1>
-          <p className="text-muted text-sm md:text-base">
-            Discover exclusive discounts and tailored rewards just for you.
-          </p>
-        </div>
+    <div style={{padding:'0 0 16px'}}>
+      <div style={{marginBottom:'20px'}}>
+        <h1 style={{fontSize:'22px',fontWeight:'800',color:'#782B90',margin:'0 0 4px'}}>Special Offers</h1>
+        <p style={{fontSize:'13px',color:'#9ca3af',margin:0}}>Exclusive discounts and tailored rewards just for you.</p>
+      </div>
 
-        {/* Tabs Filter */}
-        <div className="flex gap-2 p-1.5 bg-white border border-border rounded-xl mb-8 shadow-sm max-w-md">
-          {['All', 'All Stores', 'Your Store'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 px-4 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                activeTab === tab
-                  ? 'bg-brand-purple text-white shadow-sm'
-                  : 'text-muted hover:text-brand-purple hover:bg-brand-purple/5'
-              }`}
-            >
-              {tab}
-            </button>
+      <div style={{display:'flex',gap:'8px',marginBottom:'20px'}}>
+        {tabs.map(tab => (
+          <button key={tab.key} onClick={() => setFilter(tab.key)}
+            style={{padding:'8px 16px',borderRadius:'20px',fontSize:'13px',fontWeight:'600',cursor:'pointer',border:'none',
+              background: filter === tab.key ? '#782B90' : '#f3e8f7',
+              color: filter === tab.key ? 'white' : '#782B90'}}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{background:'white',borderRadius:'12px',padding:'16px',border:'1px solid #f0e6f5',height:'100px'}} />
           ))}
         </div>
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center mb-8 shadow-sm">
-            <span className="text-3xl">⚠️</span>
-            <h3 className="text-lg font-bold text-red-800 mt-2">Failed to load offers</h3>
-            <p className="text-red-600 text-sm mt-1 mb-4">
-              {error.response?.data?.message || 'Something went wrong while fetching offers.'}
-            </p>
-            <button
-              onClick={() => refetch()}
-              className="px-6 py-2 bg-brand-purple text-white font-semibold rounded-full hover:bg-brand-purple/90 transition-colors"
-            >
-              Try Again
+      ) : filtered.length === 0 ? (
+        <div style={{background:'white',borderRadius:'12px',padding:'48px 24px',textAlign:'center',border:'1px solid #f0e6f5'}}>
+          <div style={{fontSize:'32px',marginBottom:'12px'}}>🎁</div>
+          <h3 style={{color:'#782B90',fontWeight:'700',marginBottom:'6px'}}>No offers found</h3>
+          <p style={{color:'#9ca3af',fontSize:'13px'}}>Check back soon for exciting deals!</p>
+          {filter !== 'all' && (
+            <button onClick={() => setFilter('all')}
+              style={{marginTop:'16px',padding:'8px 20px',background:'#782B90',color:'white',border:'none',borderRadius:'20px',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}>
+              Show All Offers
             </button>
-          </div>
-        )}
-
-        {/* Loading Skeletons */}
-        {isLoading && (
-          <div className="grid gap-6 sm:grid-cols-2">
-            {[1, 2, 4].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-5 border border-border border-l-4 border-l-brand-purple/40 shadow-sm animate-pulse flex flex-col justify-between h-48"
-              >
-                <div>
-                  <div className="flex justify-between items-start gap-4 mb-3">
-                    <div className="h-6 bg-border rounded w-2/3"></div>
-                    <div className="h-6 bg-border rounded-full w-16"></div>
-                  </div>
-                  <div className="h-4 bg-border rounded w-5/6 mb-2"></div>
-                  <div className="h-4 bg-border rounded w-1/2"></div>
-                </div>
-                <div className="flex justify-between items-center mt-4">
-                  <div className="h-4 bg-border rounded w-24"></div>
-                  <div className="h-6 bg-border rounded-full w-20"></div>
-                </div>
+          )}
+        </div>
+      ) : (
+        <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+          {filtered.map(offer => (
+            <div key={offer.id} style={{background:'white',borderRadius:'12px',border:'1px solid #f0e6f5',borderLeft:'4px solid #782B90',padding:'16px',boxShadow:'0 1px 4px rgba(120,43,144,0.08)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'6px'}}>
+                <h3 style={{fontSize:'15px',fontWeight:'700',color:'#1f2937',margin:0,flex:1}}>{offer.title}</h3>
+                <span style={{background:'#FFF200',color:'#782B90',fontSize:'11px',fontWeight:'800',padding:'3px 10px',borderRadius:'12px',flexShrink:0,marginLeft:'8px'}}>
+                  {offer.discount_label}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Content List */}
-        {!isLoading && !error && (
-          filteredOffers.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2">
-              {filteredOffers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="bg-white rounded-2xl p-5 border border-border border-l-4 border-l-brand-purple shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
-                >
-                  <div>
-                    {/* Badge & Title */}
-                    <div className="flex justify-between items-start gap-4 mb-3">
-                      <h3 className="text-lg font-bold text-ink group-hover:text-brand-purple transition-colors line-clamp-1">
-                        {offer.title}
-                      </h3>
-                      <span className="flex-shrink-0 px-2.5 py-1 bg-brand-yellow text-brand-purple font-extrabold text-xs rounded-full shadow-sm">
-                        {offer.discount_label}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-muted text-sm line-clamp-3 mb-4 leading-relaxed">
-                      {offer.description}
-                    </p>
-                  </div>
-
-                  {/* Footer Stats & Scope */}
-                  <div className="flex justify-between items-center border-t border-border/60 pt-3 mt-auto">
-                    <div className="flex items-center gap-1.5 text-xs text-muted font-medium">
-                      <span className="text-sm">📅</span>
-                      <span>Valid until {formatDate(offer.valid_until)}</span>
-                    </div>
-
-                    {/* Store Scope Tag */}
-                    <span
-                      className={`px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full ${
-                        offer.is_all_stores
-                          ? 'bg-green-50 text-green-700 border border-green-200'
-                          : 'bg-brand-purple-light text-brand-purple border border-brand-purple/10'
-                      }`}
-                    >
-                      {offer.is_all_stores ? 'All Stores' : 'Store Specific'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* Empty State */
-            <div className="bg-white rounded-2xl border border-border p-12 text-center shadow-sm max-w-md mx-auto">
-              <div className="w-16 h-16 bg-brand-purple/10 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce">
-                🎁
+              {offer.description && (
+                <p style={{fontSize:'13px',color:'#6b7280',margin:'0 0 10px'}}>{offer.description}</p>
+              )}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:'11px',color:'#9ca3af'}}>
+                  Valid until {new Date(offer.valid_until).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}
+                </span>
+                <span style={{fontSize:'10px',fontWeight:'600',padding:'2px 8px',borderRadius:'10px',
+                  background: offer.is_all_stores ? '#f0fdf4' : '#f3e8f7',
+                  color: offer.is_all_stores ? '#166534' : '#782B90'}}>
+                  {offer.is_all_stores ? 'ALL STORES' : 'STORE SPECIFIC'}
+                </span>
               </div>
-              <h3 className="text-xl font-bold text-ink mb-2">No offers found</h3>
-              <p className="text-muted text-sm mb-6">
-                There are no active offers in this tab right now. Check back soon for exciting deals!
-              </p>
-              <button
-                onClick={() => setActiveTab('All')}
-                className="px-6 py-2.5 bg-brand-purple text-white font-semibold rounded-full hover:bg-brand-purple/90 transition-all text-sm"
-              >
-                Show All Offers
-              </button>
             </div>
-          )
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

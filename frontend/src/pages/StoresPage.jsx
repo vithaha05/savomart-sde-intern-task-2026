@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axiosInstance from '../api/axios';
 
-// Fix default icons
+// Fix Leaflet icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -23,9 +23,7 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
 
 function MapController({ center, zoom }) {
   const map = useMap();
-  useEffect(() => {
-    if (center) map.setView(center, zoom || 13);
-  }, [center, zoom, map]);
+  useEffect(() => { if (center) map.setView(center, zoom || 13); }, [center, zoom, map]);
   return null;
 }
 
@@ -58,18 +56,23 @@ export default function StoresPage() {
         setMapCenter([loc.lat, loc.lng]);
         setMapZoom(13);
       },
-      () => {}, // ignore error
+      () => {},
       { enableHighAccuracy: true }
     );
   }, []);
 
   const processedStores = stores.map(store => ({
     ...store,
-    distance_km: userLocation ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) : store.distance_km
+    distance_km: userLocation ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) : (store.distance_km || 999)
   }));
 
-  const sortedStores = [...processedStores].sort((a, b) => (a.distance_km || 999) - (b.distance_km || 999));
+  const sortedStores = [...processedStores].sort((a, b) => a.distance_km - b.distance_km);
   const nearestId = sortedStores[0]?.id;
+
+  const s = {
+    card: { background: 'white', borderRadius: '12px', border: '1px solid #f0e6f5', padding: '16px', marginBottom: '12px', boxShadow: '0 1px 4px rgba(120,43,144,0.08)' },
+    nearestCard: { background: 'white', borderRadius: '12px', border: '2px solid #FFF200', padding: '16px', marginBottom: '12px', boxShadow: '0 1px 4px rgba(120,43,144,0.08)' }
+  };
 
   return (
     <div style={{ paddingBottom: '24px' }}>
@@ -77,16 +80,53 @@ export default function StoresPage() {
       <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '16px' }}>{stores.length} Savomart stores</p>
 
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <button onClick={() => setViewMode('list')} style={{ padding: '8px 20px', borderRadius: '20px', fontWeight: '600', background: viewMode === 'list' ? '#782B90' : '#f3e8f7', color: viewMode === 'list' ? 'white' : '#782B90', border: 'none' }}>📋 List</button>
-        <button onClick={() => setViewMode('map')} style={{ padding: '8px 20px', borderRadius: '20px', fontWeight: '600', background: viewMode === 'map' ? '#782B90' : '#f3e8f7', color: viewMode === 'map' ? 'white' : '#782B90', border: 'none' }}>🗺️ Map</button>
+        <button onClick={() => setViewMode('list')} style={{ padding: '8px 20px', borderRadius: '20px', fontWeight: viewMode === 'list' ? '700' : '600', background: viewMode === 'list' ? '#782B90' : '#f3e8f7', color: viewMode === 'list' ? 'white' : '#782B90', border: 'none' }}>📋 List</button>
+        <button onClick={() => setViewMode('map')} style={{ padding: '8px 20px', borderRadius: '20px', fontWeight: viewMode === 'map' ? '700' : '600', background: viewMode === 'map' ? '#782B90' : '#f3e8f7', color: viewMode === 'map' ? 'white' : '#782B90', border: 'none' }}>🗺️ Map</button>
       </div>
 
+      {isLoading && <p>Loading stores...</p>}
+
+      {/* LIST VIEW */}
+      {viewMode === 'list' && (
+        <div>
+          {sortedStores.length === 0 ? (
+            <p>No stores found.</p>
+          ) : (
+            sortedStores.map(store => {
+              const isNearest = store.id === nearestId;
+              return (
+                <div key={store.id} style={isNearest ? s.nearestCard : s.card}>
+                  <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '4px' }}>
+                    {store.name} {isNearest && '⭐ Nearest'}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '8px' }}>
+                    {store.address}, {store.city}
+                  </div>
+                  {store.phone && <div style={{ fontSize: '13px', color: '#782B90' }}>📞 {store.phone}</div>}
+                  {store.distance_km && (
+                    <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: '600', color: '#166534' }}>
+                      📍 {store.distance_km.toFixed(1)} km away
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* MAP VIEW */}
       {viewMode === 'map' && (
         <div style={{ height: '460px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #f0e6f5', position: 'relative' }}>
           <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer
+              attribution='&copy; OpenStreetMap'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
             <MapController center={mapCenter} zoom={mapZoom} />
+            
             {userLocation && <Marker position={[userLocation.lat, userLocation.lng]} />}
+
             {processedStores.map(store => (
               <Marker 
                 key={store.id} 
@@ -101,13 +141,16 @@ export default function StoresPage() {
               </Marker>
             ))}
           </MapContainer>
-          <button onClick={() => navigator.geolocation.getCurrentPosition(p => {
-            const loc = { lat: p.coords.latitude, lng: p.coords.longitude };
-            setUserLocation(loc);
-            setMapCenter([loc.lat, loc.lng]);
-            setMapZoom(14);
-          })} 
-            style={{ position: 'absolute', bottom: '16px', right: '16px', padding: '8px 16px', background: 'white', border: '1px solid #f0e6f5', borderRadius: '20px', fontWeight: '600', zIndex: 1000 }}>
+
+          <button 
+            onClick={() => navigator.geolocation.getCurrentPosition(pos => {
+              const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+              setUserLocation(loc);
+              setMapCenter([loc.lat, loc.lng]);
+              setMapZoom(14);
+            })} 
+            style={{ position: 'absolute', bottom: '16px', right: '16px', padding: '8px 16px', background: 'white', border: '1px solid #f0e6f5', borderRadius: '20px', fontWeight: '600', zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+          >
             📍 Locate me
           </button>
         </div>

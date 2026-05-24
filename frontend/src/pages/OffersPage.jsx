@@ -28,7 +28,6 @@ export default function OffersPage() {
         <h1 style={{fontSize:'22px',fontWeight:'800',color:'#782B90',margin:'0 0 4px'}}>Special Offers</h1>
         <p style={{fontSize:'13px',color:'#9ca3af',margin:0}}>Exclusive discounts and tailored rewards just for you.</p>
       </div>
-
       <div style={{display:'flex',gap:'8px',marginBottom:'20px'}}>
         {tabs.map(tab => (
           <button key={tab.key} onClick={() => setFilter(tab.key)}
@@ -39,7 +38,6 @@ export default function OffersPage() {
           </button>
         ))}
       </div>
-
       {isLoading ? (
         <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
           {[1,2,3].map(i => (

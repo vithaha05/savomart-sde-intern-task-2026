@@ -40,38 +40,60 @@ const nearestIcon = new L.DivIcon({
 export default function StoresPage() {
   const [viewMode, setViewMode] = useState('list');
   const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([12.9716, 77.5946]);
+  const [mapCenter, setMapCenter] = useState([12.9716, 77.5946]); // Bangalore default
   const [mapZoom, setMapZoom] = useState(12);
+  const [locationStatus, setLocationStatus] = useState('prompt');
 
   const { data: stores = [], isLoading } = useQuery({
     queryKey: ['stores'],
     queryFn: () => axiosInstance.get('/stores').then(r => r.data),
   });
 
+  // Try to get location on mount
   useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('not_supported');
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
         setMapCenter([loc.lat, loc.lng]);
         setMapZoom(13);
+        setLocationStatus('granted');
       },
-      () => {},
-      { enableHighAccuracy: true }
+      (err) => {
+        console.log("Geolocation error:", err);
+        setLocationStatus(err.code === 1 ? 'denied' : 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   }, []);
 
   const processedStores = stores.map(store => ({
     ...store,
-    distance_km: userLocation ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) : (store.distance_km || 999)
+    distance_km: userLocation 
+      ? haversineDistance(userLocation.lat, userLocation.lng, store.lat, store.lng) 
+      : (store.distance_km || 999)
   }));
 
   const sortedStores = [...processedStores].sort((a, b) => a.distance_km - b.distance_km);
   const nearestId = sortedStores[0]?.id;
 
-  const s = {
-    card: { background: 'white', borderRadius: '12px', border: '1px solid #f0e6f5', padding: '16px', marginBottom: '12px', boxShadow: '0 1px 4px rgba(120,43,144,0.08)' },
-    nearestCard: { background: 'white', borderRadius: '12px', border: '2px solid #FFF200', padding: '16px', marginBottom: '12px', boxShadow: '0 1px 4px rgba(120,43,144,0.08)' }
+  const handleLocateMe = () => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLocation(loc);
+        setMapCenter([loc.lat, loc.lng]);
+        setMapZoom(14);
+        setLocationStatus('granted');
+      },
+      () => alert("Please allow location access in your browser settings."),
+      { enableHighAccuracy: true }
+    );
   };
 
   return (
@@ -84,47 +106,51 @@ export default function StoresPage() {
         <button onClick={() => setViewMode('map')} style={{ padding: '8px 20px', borderRadius: '20px', fontWeight: viewMode === 'map' ? '700' : '600', background: viewMode === 'map' ? '#782B90' : '#f3e8f7', color: viewMode === 'map' ? 'white' : '#782B90', border: 'none' }}>🗺️ Map</button>
       </div>
 
-      {isLoading && <p>Loading stores...</p>}
+      {locationStatus === 'denied' && (
+        <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px' }}>Location access denied. Click "Locate me" to try again.</p>
+      )}
 
       {/* LIST VIEW */}
       {viewMode === 'list' && (
         <div>
-          {sortedStores.length === 0 ? (
-            <p>No stores found.</p>
-          ) : (
-            sortedStores.map(store => {
-              const isNearest = store.id === nearestId;
-              return (
-                <div key={store.id} style={isNearest ? s.nearestCard : s.card}>
-                  <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '4px' }}>
-                    {store.name} {isNearest && '⭐ Nearest'}
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '8px' }}>
-                    {store.address}, {store.city}
-                  </div>
-                  {store.phone && <div style={{ fontSize: '13px', color: '#782B90' }}>📞 {store.phone}</div>}
-                  {store.distance_km && (
-                    <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: '600', color: '#166534' }}>
-                      📍 {store.distance_km.toFixed(1)} km away
-                    </div>
-                  )}
+          {sortedStores.map(store => {
+            const isNearest = store.id === nearestId;
+            return (
+              <div key={store.id} style={{
+                background: 'white',
+                borderRadius: '12px',
+                border: isNearest ? '2px solid #FFF200' : '1px solid #f0e6f5',
+                padding: '16px',
+                marginBottom: '12px',
+                boxShadow: '0 1px 4px rgba(120,43,144,0.08)'
+              }}>
+                <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '6px' }}>
+                  {store.name} {isNearest && '⭐ Nearest'}
                 </div>
-              );
-            })
-          )}
+                <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '8px' }}>
+                  {store.address}, {store.city}
+                </div>
+                {store.distance_km && store.distance_km < 999 && (
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#166534' }}>
+                    📍 {store.distance_km.toFixed(1)} km away
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
       {/* MAP VIEW */}
       {viewMode === 'map' && (
-        <div style={{ height: '460px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #f0e6f5', position: 'relative' }}>
+        <div style={{ height: '480px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #f0e6f5', position: 'relative' }}>
           <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }}>
             <TileLayer
               attribution='&copy; OpenStreetMap'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <MapController center={mapCenter} zoom={mapZoom} />
-            
+
             {userLocation && <Marker position={[userLocation.lat, userLocation.lng]} />}
 
             {processedStores.map(store => (
@@ -136,20 +162,26 @@ export default function StoresPage() {
                 <Popup>
                   <strong>{store.name}</strong><br />
                   {store.address}<br />
-                  {store.distance_km && `${store.distance_km.toFixed(1)} km`}
+                  {store.distance_km && store.distance_km < 999 && `${store.distance_km.toFixed(1)} km`}
                 </Popup>
               </Marker>
             ))}
           </MapContainer>
 
           <button 
-            onClick={() => navigator.geolocation.getCurrentPosition(pos => {
-              const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-              setUserLocation(loc);
-              setMapCenter([loc.lat, loc.lng]);
-              setMapZoom(14);
-            })} 
-            style={{ position: 'absolute', bottom: '16px', right: '16px', padding: '8px 16px', background: 'white', border: '1px solid #f0e6f5', borderRadius: '20px', fontWeight: '600', zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+            onClick={handleLocateMe}
+            style={{ 
+              position: 'absolute', 
+              bottom: '16px', 
+              right: '16px', 
+              padding: '10px 16px', 
+              background: 'white', 
+              border: '1px solid #f0e6f5', 
+              borderRadius: '20px', 
+              fontWeight: '700',
+              zIndex: 1000,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+            }}
           >
             📍 Locate me
           </button>

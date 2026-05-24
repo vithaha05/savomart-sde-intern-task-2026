@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import close_db, init_db
-from app.routers import auth, health, offers, profile, stores, support
+from app.routers import auth, chat, health, offers, profile, stores, support
 
 
 settings = get_settings()
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(profile.router, prefix="/profile", tags=["profile"])
     app.include_router(stores.router, prefix="/stores", tags=["stores"])
     app.include_router(support.router, prefix="/support", tags=["support"])
+    app.include_router(chat.router, prefix="/chat", tags=["chat"])
     app.include_router(health.router, prefix="", tags=["health"])
 
     return app

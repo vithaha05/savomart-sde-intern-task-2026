@@ -7,23 +7,15 @@ import StoresPage from './pages/StoresPage';
 import SupportPage from './pages/SupportPage';
 import ChatPage from './pages/ChatPage';
 import Layout from './components/Layout';
-import './App.css';
 
 function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();
-
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-muted">Loading...</p>
-      </div>
-    );
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
   }
-
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-
   return <Layout>{children}</Layout>;
 }
 
@@ -33,47 +25,12 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/offers"
-            element={
-              <ProtectedRoute>
-                <OffersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/stores"
-            element={
-              <ProtectedRoute>
-                <StoresPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/support"
-            element={
-              <ProtectedRoute>
-                <SupportPage />
-              </ProtectedRoute>
-            }
-            
-          />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <ChatPage />
-              </ProtectedRoute>
-            }
-          />
+          
+          <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/offers" element={<ProtectedRoute><OffersPage /></ProtectedRoute>} />
+          <Route path="/stores" element={<ProtectedRoute><StoresPage /></ProtectedRoute>} />
+          <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </Router>
